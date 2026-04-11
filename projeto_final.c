@@ -27,9 +27,11 @@ volatile bool estado_btnA = false;
 volatile bool estado_btnB = false;
 volatile bool joystick_pressed = false;
 
+// Definição dos estados do sistema
 typedef enum { MENU, IDLE, SAMPLING, PROCESSING, DISPLAY_RESULT } State;
 
 
+// configurações iniciais: I2C, ADC, GPIOs
 void setup(){
     i2c_init(I2C_PORT, ssd1306_i2c_clock * 1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
@@ -57,11 +59,12 @@ void setup(){
 }
 
 void button_callback(uint gpio, uint32_t events) {
-    static uint16_t last_pressed_time = 0;  // Agora persiste entre chamadas
-    uint16_t timme_now = to_ms_since_boot(get_absolute_time());
+    static uint16_t last_pressed_time = 0;  // Variável estática para armazenar o tempo do último pressionamento
+    uint16_t timme_now = to_ms_since_boot(get_absolute_time()); // Obtém o tempo atual em milissegundos desde a inicialização do sistema
     uint16_t debounce_time = 200;  // 200ms de debounce
     
-    if (timme_now - last_pressed_time >= debounce_time) {  // Condição corrigida
+    // Verifica se o tempo desde o último pressionamento é maior ou igual ao tempo de debounce
+    if (timme_now - last_pressed_time >= debounce_time) { 
         last_pressed_time = timme_now;
         if (gpio == BTN_A) {
             printf("Botão A pressionado\n");
@@ -77,10 +80,10 @@ int main() {
     stdio_init_all();
     printf("Starting tuner...\n");
     State estado_atual = MENU;
-    uint16_t buffer_audio[BUFFER_SIZE];
-    float freq_detectada = 0;
-    int selected_string = 0;
-    int menu_top = 0;
+    uint16_t buffer_audio[BUFFER_SIZE]; // Buffer para amostras de áudio
+    float freq_detectada = 0; // Frequência detectada após processamento
+    int selected_string = 0; // Índice da corda selecionada no menu
+    int menu_top = 0; // Índice do item superior visível no menu
     
     setup();
     gpio_set_irq_enabled_with_callback(BTN_A, GPIO_IRQ_EDGE_FALL, true, &button_callback);
@@ -107,7 +110,7 @@ int main() {
             case MENU: {
                 menu_render(ssd, &frame_area, afinacao_padrao, QTD_NOTAS, selected_string, &menu_top);
 
-                // Handle joystick
+                // joystick
                 adc_select_input(ADC_CHANNEL_X); // X axis
                 uint16_t x_val = adc_read();
                 adc_select_input(ADC_CHANNEL_Y); // Y axis
@@ -115,11 +118,12 @@ int main() {
 
                 printf("Menu: selected=%d, x=%d, y=%d, button=%d\n", selected_string, x_val, y_val, gpio_get(BTN_A));
 
+                // Atualiza a seleção do menu com base no joystick e no estado do botão
                 menu_update_selection(&selected_string, QTD_NOTAS, y_val, &joystick_pressed);
 
                
                 if (estado_btnA) {
-                    printf("Botao pressionado, string selecionada: %d\n", selected_string);
+                    printf("Botao A pressionado, string selecionada: %d\n", selected_string);
                     estado_atual = IDLE;
                     estado_btnA = false;
                 }
@@ -129,6 +133,7 @@ int main() {
 
             case IDLE:
                 if (estado_btnB) {
+                    printf("Botao B pressionado, voltando ao menu\n");
                     estado_atual = MENU;
                     estado_btnB = false;
                 } else if (abs((int)adc_read() - 2048) > 100) {
@@ -152,11 +157,8 @@ int main() {
                 break;
 
             case DISPLAY_RESULT:
-               memset(ssd, 0, ssd1306_buffer_length);
-               
-               
-                
-                int melhor_nota = selected_string; // Use selected string
+                memset(ssd, 0, ssd1306_buffer_length);
+                int melhor_nota = selected_string; 
                 
                 char msg[20];
                 sprintf(msg, "Nota: %s", afinacao_padrao[melhor_nota].nome);
@@ -173,31 +175,20 @@ int main() {
                 } 
                 else if (fabs(erro_hz) < 1.2) { // Zona de tolerância: AFINADO
                     ssd1306_draw_string(ssd, 35, 40, "OK!");
-                    gpio_put(LEDS[0], 1); // Liga LED Verde (Pino 11) [cite: 36]
+                    gpio_put(LEDS[0], 1); // Liga LED Verde
                 } 
                 else if (erro_hz < 0) { // Frequência abaixo do alvo
                     ssd1306_draw_string(ssd, 10, 40, "APERTAR CORDA ^");
-                    gpio_put(LEDS[1], 1); // Liga LED Azul (Pino 12) [cite: 36]
+                    gpio_put(LEDS[1], 1); // Liga LED Azul
                 } 
                 else { // Frequência acima do alvo
                     ssd1306_draw_string(ssd, 10, 40, "AFROUXAR CORDA v");
-                    gpio_put(LEDS[2], 1); // Liga LED Vermelho (Pino 13) [cite: 36]
+                    gpio_put(LEDS[2], 1); // Liga LED Vermelho
                 }
-
-                // 5. Interface Gráfica: Régua Dinâmica (Ponteiro) [cite: 37]
-                // Mapeia o erro para a posição X (Centro em 64 pixels)
-                // int x_ponteiro = 64 + (int)(erro_hz * 6); 
-                // if (x_ponteiro < 5) x_ponteiro = 5;
-                // if (x_ponteiro > 123) x_ponteiro = 123;
-
-                // Desenha o alvo central (fixo) e o ponteiro atual (móvel)
-                // ssd1306_draw_rect(ssd, 52, 63, 2, 10, true, false); 
-                // ssd1306_draw_rect(ssd, 54, x_ponteiro, 2, 6, true, true); 
-
                 // 6. Atualização do Hardware e Finalização do Ciclo
                 render_on_display(ssd, &frame_area);
                 
-                sleep_ms(800); // Tempo para o usuário ler a informação
+                sleep_ms(800);
                 
                 // Desliga todos os LEDs para a próxima leitura
                 for(int i=0; i<3; i++) gpio_put(LEDS[i], 0);
@@ -206,5 +197,4 @@ int main() {
                 break;
         }
     }
-    return 0;
 }

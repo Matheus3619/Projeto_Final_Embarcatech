@@ -20,7 +20,7 @@ void menu_render(uint8_t *ssd, struct render_area *area, const NotaMusical notes
         if (item_index >= qtd) break;
 
         char line[12];
-        sprintf(line, "%s %s", (item_index == selected) ? ">>" : "  ", notes[item_index].nome);
+        sprintf(line, "%s %s", (item_index == selected) ? "->" : "  ", notes[item_index].nome);
         ssd1306_draw_string(ssd, 5, 12 + row * 12, line);
     }
 
