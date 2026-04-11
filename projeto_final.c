@@ -23,6 +23,9 @@ NotaMusical afinacao_padrao[] = {
     {"mi ", 329.6}  // 1ª
 };
 #define QTD_NOTAS 6
+volatile bool estado_btnA = false;
+volatile bool estado_btnB = false;
+volatile bool joystick_pressed = false;
 
 typedef enum { MENU, IDLE, SAMPLING, PROCESSING, DISPLAY_RESULT } State;
 
@@ -53,6 +56,23 @@ void setup(){
     }
 }
 
+void button_callback(uint gpio, uint32_t events) {
+    static uint16_t last_pressed_time = 0;  // Agora persiste entre chamadas
+    uint16_t timme_now = to_ms_since_boot(get_absolute_time());
+    uint16_t debounce_time = 200;  // 200ms de debounce
+    
+    if (timme_now - last_pressed_time >= debounce_time) {  // Condição corrigida
+        last_pressed_time = timme_now;
+        if (gpio == BTN_A) {
+            printf("Botão A pressionado\n");
+            estado_btnA = true;
+        } else if (gpio == BTN_B) {
+            printf("Botão B pressionado\n");
+            estado_btnB = true;
+        }
+    }
+}
+
 int main() {
     stdio_init_all();
     printf("Starting tuner...\n");
@@ -61,9 +81,10 @@ int main() {
     float freq_detectada = 0;
     int selected_string = 0;
     int menu_top = 0;
-    bool button_pressed = false;
-
+    
     setup();
+    gpio_set_irq_enabled_with_callback(BTN_A, GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    gpio_set_irq_enabled(BTN_B, GPIO_IRQ_EDGE_FALL, true);
     ssd1306_init();
 
     struct render_area frame_area = {
@@ -94,22 +115,22 @@ int main() {
 
                 printf("Menu: selected=%d, x=%d, y=%d, button=%d\n", selected_string, x_val, y_val, gpio_get(BTN_A));
 
-                menu_update_selection(&selected_string, QTD_NOTAS, y_val, &button_pressed);
+                menu_update_selection(&selected_string, QTD_NOTAS, y_val, &joystick_pressed);
 
-                // Handle button
-                if (!gpio_get(BTN_A)) {
-                    printf("Button pressed, selecting string %d\n", selected_string);
+               
+                if (estado_btnA) {
+                    printf("Botao pressionado, string selecionada: %d\n", selected_string);
                     estado_atual = IDLE;
-                    sleep_ms(200); // Debounce
+                    estado_btnA = false;
                 }
-                sleep_ms(100);
+                sleep_ms(10);
             }
                 break;
 
             case IDLE:
-                if (!gpio_get(BTN_A)) {
+                if (estado_btnB) {
                     estado_atual = MENU;
-                    sleep_ms(200);
+                    estado_btnB = false;
                 } else if (abs((int)adc_read() - 2048) > 100) {
                     estado_atual = SAMPLING;
                 }
@@ -165,9 +186,9 @@ int main() {
 
                 // 5. Interface Gráfica: Régua Dinâmica (Ponteiro) [cite: 37]
                 // Mapeia o erro para a posição X (Centro em 64 pixels)
-                int x_ponteiro = 64 + (int)(erro_hz * 6); 
-                if (x_ponteiro < 5) x_ponteiro = 5;
-                if (x_ponteiro > 123) x_ponteiro = 123;
+                // int x_ponteiro = 64 + (int)(erro_hz * 6); 
+                // if (x_ponteiro < 5) x_ponteiro = 5;
+                // if (x_ponteiro > 123) x_ponteiro = 123;
 
                 // Desenha o alvo central (fixo) e o ponteiro atual (móvel)
                 // ssd1306_draw_rect(ssd, 52, 63, 2, 10, true, false); 

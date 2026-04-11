@@ -34,7 +34,7 @@ void menu_render(uint8_t *ssd, struct render_area *area, const NotaMusical notes
     render_on_display(ssd, area);
 }
 
-void menu_update_selection(int *selected, int qtd, uint16_t y_val, bool *button_pressed) {
+void menu_update_selection(int *selected, int qtd, uint16_t y_val, volatile bool *button_pressed) {
     if (y_val < 1000 && !*button_pressed) {
         *selected = (*selected - 1 + qtd) % qtd;
         *button_pressed = true;
