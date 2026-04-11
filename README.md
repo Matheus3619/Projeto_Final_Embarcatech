@@ -99,9 +99,9 @@ GND         | GND             | Terra comum
 - **Sistema Operacional**: Windows, macOS ou Linux
 - **Ferramentas**:
   - CMake (v3.13+)
-  - ARM GCC Toolchain (arm-none-eabi-gcc)
+  - ARM GCC Toolchain (`arm-none-eabi-gcc`)
   - Ninja ou Make
-  - Pico SDK v2.2.0
+  - `Pico SDK` v2.2.0
   - VS Code (recomendado) com extensão Raspberry Pi Pico
 
 ### Passos de Instalação
@@ -141,42 +141,7 @@ GND         | GND             | Terra comum
 
 ### Fluxo de Operação
 
-```
-┌─────────────────────┐
-│      MENU           │
-│  Joystick: Navega   │
-│  BtnA: Confirma     │
-└─────────────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│      IDLE           │
-│  Microfone: Aguarda │
-│  BtnB: Voltar menu  │
-│  Joystick: Amostra  │
-└─────────────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│    SAMPLING         │
-│  Captura 1024       │
-│  amostras (128ms)   │
-└─────────────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│   PROCESSING        │
-│  Autocorrelação     │
-│  Detecta frequência │
-└─────────────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ DISPLAY_RESULT      │
-│  Mostra no OLED     │
-│  Acende LED status  │
-└─────────────────────┘
-```
+<img src="img/mermaid-diagram.png" alt="diagrama do fluxo de operação" width="400">
 
 ### Passo a Passo
 
@@ -219,27 +184,27 @@ Projeto_Final_Embarcatech/
 ├── pico_sdk_import.cmake            # Import do Pico SDK
 ├── LICENSE                          # Licença MIT
 ├── README.md                        # Este arquivo
-├── Projeto_final.c                  # Arquivo principal (máquina de estados)
+├── `Projeto_final.c`                  # Arquivo principal (máquina de estados)
 │
-├── inc/                             # Headers do projeto
-│   ├── config.h                     # Definições de pinos e parâmetros
-│   ├── menu.h                       # Interface do menu
-│   ├── display.h                    # Interface do display
-│   ├── processamento_de_audio.h     # Interface do processamento de áudio
-│   ├── ssd1306.h                    # Driver OLED (header)
-│   ├── ssd1306_i2c.h                # Camada I2C para OLED
-│   └── ssd1306_font.h               # Fontes para display
+├── `inc/`                             # Headers do projeto
+│   ├── `config.h`                     # Definições de pinos e parâmetros
+│   ├── `menu.h`                       # Interface do menu
+│   ├── `display.h`                    # Interface do display
+│   ├── `processamento_de_audio.h`     # Interface do processamento de áudio
+│   ├── `ssd1306.h`                    # Driver OLED (header)
+│   ├── `ssd1306_i2c.h`                # Camada I2C para OLED
+│   └── `ssd1306_font.h`               # Fontes para display
 │
-├── src/                             # Implementações
-│   ├── menu.c                       # Lógica do menu (navegação)
-│   ├── display.c                    # Funções do display
-│   └── processamento_de_audio.c     # Detecção de frequência (autocorrelação)
+├── `src/`                             # Implementações
+│   ├── `menu.c`                       # Lógica do menu (navegação)
+│   ├── `display.c`                    # Funções do display
+│   └── `processamento_de_audio.c`     # Detecção de frequência (autocorrelação)
 │
-├── inc/ssd1306_i2c.c                # Driver OLED I2C (implementação)
+├── `inc/ssd1306_i2c.c`                # Driver OLED I2C (implementação)
 │
-└── build/                           # Diretório de build (gerado)
-    ├── Projeto_final.elf            # Executável ELF
-    ├── Projeto_final.uf2           # Firmware (para upload)
+└── `build/`                           # Diretório de build (gerado)
+    ├── `Projeto_final.elf`            # Executável ELF
+    ├── `Projeto_final.uf2`           # Firmware (para upload)
     └── ...
 ```
 
@@ -400,7 +365,7 @@ Clique em "Run Project" (já está configurado).
 
 **Solução**:
 ```c
-// Verifique em config.h:
+// Verifique em `config.h`:
 #define I2C_SDA 14
 #define I2C_SCL 15
 #define I2C_PORT i2c1
@@ -434,7 +399,7 @@ gpio_set_irq_enabled_with_callback(BTN_B, GPIO_IRQ_EDGE_FALL, true, &button_call
 
 **Solução**:
 ```bash
-# Adicione printf para debug em Projeto_final.c:
+# Adicione printf para debug em `Projeto_final.c`:
 printf("y_val=%d, freq_detectada=%f, freq_alvo=%f\n", y_val, freq_detectada, afinacao_padrao[selected_string].freq_alvo);
 
 # Teste com onda senoidal gerada (ex: via app de gerador de tons)
@@ -446,7 +411,7 @@ printf("y_val=%d, freq_detectada=%f, freq_alvo=%f\n", y_val, freq_detectada, afi
 
 **Solução**:
 ```c
-// Em src/menu.c, se o joystick estiver invertido:
+// Em `src/menu.c`, se o joystick estiver invertido:
 *selected = ((4095 - y_val) * qtd) / 4096;  // Inverte
 // ou troque por:
 *selected = (y_val * qtd) / 4096;  // Normal
@@ -506,7 +471,7 @@ Este projeto está licenciado sob a **MIT License**. Veja [LICENSE](LICENSE) par
 
 ## 👤 Autor
 
-**Matheus Souza** - Projeto Final Embarcatech 2024-2025
+**Francisco Matheus Gomes de Sousa** - Projeto Final Embarcatech 2026
 
 - GitHub: [@Matheus3619](https://github.com/Matheus3619)
 - Repositório: [Projeto_Final_Embarcatech](https://github.com/Matheus3619/Projeto_Final_Embarcatech)
