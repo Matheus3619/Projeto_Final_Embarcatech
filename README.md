@@ -27,6 +27,7 @@ Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberr
   - 🟢 Verde: Corda afinada (dentro da tolerância)
   - 🔵 Azul: Corda muito baixa (apertar)
   - 🔴 Vermelho: Corda muito alta (afrouxar)
+- **Feedback Sonoro com Buzzer**: Emite o som da corda afinada para confirmação auditiva.
 - **Navegação por Joystick**: Seleção suave e contínua das 6 cordas de guitarra.
 - **Botões de Controle**: Confirmação (btnA) e retorno ao menu (btnB).
 - **Padrão EADGBE**: Afinação convencional de 6 cordas.
@@ -46,6 +47,7 @@ Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberr
 | Joystick Analógico | 1 | Navegação no menu |
 | Botões Momentâneos | 2 | Confirmação e retorno |
 | LEDs | 3 | Feedback de status |
+| Buzzer Passivo | 1 | Feedback sonoro de afinação |
 | Resistores | Diversos | ~10kΩ para BTNs, ~220Ω para LEDs |
 | Capacitores | Diversos | Decoupling e filtragem |
 
@@ -69,6 +71,9 @@ BTN_B = GPIO 6  (Voltar ao menu)
 LED_GREEN  = GPIO 11  (Corda afinada)
 LED_BLUE   = GPIO 12  (Corda baixa)
 LED_RED    = GPIO 13  (Corda alta)
+
+// Buzzer (PWM)
+BUZZER_PIN = GPIO 10  (Feedback sonoro)
 ```
 
 ### Diagrama de Conexão
@@ -84,6 +89,7 @@ GP6         | Botão B         | Retornar
 GP11        | LED Verde       | Status afinado
 GP12        | LED Azul        | Status baixo
 GP13        | LED Vermelho    | Status alto
+GP10 (PWM)  | Buzzer          | Feedback sonoro
 GP14 (I2C1-SDA) | OLED SDA    | Display
 GP15 (I2C1-SCL) | OLED SCL    | Display
 GND         | GND             | Terra comum
