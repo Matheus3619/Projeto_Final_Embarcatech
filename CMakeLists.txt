@@ -40,6 +40,7 @@ add_executable(Projeto_final Projeto_final.c
         src/processamento_de_audio.c
         src/menu.c
         src/display.c
+        src/saida_de_audio.c
 )
 
 pico_set_program_name(Projeto_final "Projeto_final")

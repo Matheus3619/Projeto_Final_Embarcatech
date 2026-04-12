@@ -12,6 +12,7 @@
 #include "hardware/gpio.h"
 #include "inc/config.h"
 #include "inc/processamento_de_audio.h"
+#include "src/saida_de_audio.h"
 #include <math.h>
 
 NotaMusical afinacao_padrao[] = {
@@ -52,6 +53,10 @@ void setup(){
     gpio_set_dir(BTN_B, GPIO_IN);
     gpio_pull_up(BTN_B);
 
+    gpio_init(BUZZER_PIN);
+    gpio_set_dir(BUZZER_PIN, GPIO_OUT);
+    gpio_set_function(BUZZER_PIN, GPIO_FUNC_PWM);
+
     for(int i=0; i < 3; i++){
         gpio_init(LEDS[i]);
         gpio_set_dir(LEDS[i], GPIO_OUT);
@@ -59,9 +64,9 @@ void setup(){
 }
 
 void button_callback(uint gpio, uint32_t events) {
-    static uint16_t last_pressed_time = 0;  // Variável estática para armazenar o tempo do último pressionamento
-    uint16_t timme_now = to_ms_since_boot(get_absolute_time()); // Obtém o tempo atual em milissegundos desde a inicialização do sistema
-    uint16_t debounce_time = 200;  // 200ms de debounce
+    static uint32_t last_pressed_time = 0;  // Variável estática para armazenar o tempo do último pressionamento
+    uint32_t timme_now = to_ms_since_boot(get_absolute_time()); // Obtém o tempo atual em milissegundos desde a inicialização do sistema
+    uint32_t debounce_time = 500;  // 500ms de debounce
     
     // Verifica se o tempo desde o último pressionamento é maior ou igual ao tempo de debounce
     if (timme_now - last_pressed_time >= debounce_time) { 
@@ -111,12 +116,10 @@ int main() {
                 menu_render(ssd, &frame_area, afinacao_padrao, QTD_NOTAS, selected_string, &menu_top);
 
                 // joystick
-                adc_select_input(ADC_CHANNEL_X); // X axis
-                uint16_t x_val = adc_read();
                 adc_select_input(ADC_CHANNEL_Y); // Y axis
                 uint16_t y_val = adc_read();
 
-                printf("Menu: selected=%d, x=%d, y=%d, button=%d\n", selected_string, x_val, y_val, gpio_get(BTN_A));
+                printf("Menu: selected=%d, y=%d, button=%d\n", selected_string, y_val, !gpio_get(BTN_A));
 
                 // Atualiza a seleção do menu com base no joystick e no estado do botão
                 menu_update_selection(&selected_string, QTD_NOTAS, y_val, &joystick_pressed);
@@ -132,6 +135,7 @@ int main() {
                 break;
 
             case IDLE:
+                adc_select_input(ADC_CHAN);
                 if (estado_btnB) {
                     printf("Botao B pressionado, voltando ao menu\n");
                     estado_atual = MENU;
@@ -143,6 +147,7 @@ int main() {
                 break;
 
             case SAMPLING:
+                adc_select_input(ADC_CHAN);
                 for (int i = 0; i < BUFFER_SIZE; i++) {
                     buffer_audio[i] = adc_read();
                     sleep_us(125);
@@ -174,6 +179,7 @@ int main() {
                     ssd1306_draw_string(ssd, 20, 40, "SEM SINAL");
                 } 
                 else if (fabs(erro_hz) < 1.2) { // Zona de tolerância: AFINADO
+                    tocar_buzzer((uint)afinacao_padrao[selected_string].freq_alvo, 500); // Toca o som da corda selecionada para indicar afinação correta
                     ssd1306_draw_string(ssd, 35, 40, "OK!");
                     gpio_put(LEDS[0], 1); // Liga LED Verde
                 } 
