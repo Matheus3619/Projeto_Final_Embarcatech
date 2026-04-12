@@ -1,6 +1,8 @@
-# 🎸 Afinador de Guitarra - Raspberry Pi Pico
+# 🎸 Afinador de Violão - Raspberry Pi Pico
 
-Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberry Pi Pico (RP2040)**, utilizando processamento de sinais em tempo real para detectar e exibir a frequência das cordas.
+## OBJETIVO.
+
+Criar uma solução de assistência musical inclusiva que utilize múltiplos periféricos para auxiliar estudantes no processo de manutenção de instrumentos de corda. Através de uma máquina de estados estruturada, o dispositivo oferece uma experiência simplificada de afinação manual e automática, reduzindo a barreira de entrada para novos músicos através de tecnologia assistiva.
 
 > **Projeto desenvolvido para o Embarcatech - Desafio Final**
 
@@ -19,6 +21,15 @@ Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberr
 
 ---
 
+## 🚀 Atualizações Recentes (Estabilidade e UX)
+
+- **Filtro de Ruídos Acústico**: Adicionado um "debounce acústico" no estado de `ESPERA`. O microfone agora tira 100 amostras rápidas (~12.5ms) ao detectar um pico de som. Se for um estalo curto (como bater no microfone), o sistema ignora. A amostragem só inicia se o som for contínuo (característico de uma corda vibrando).
+- **Melhoria na Resposta dos Botões**: Ajuste do tempo de *debounce* para 200ms, proporcionando uma resposta de clique mais imediata e fluida.
+- **Prevenção de Travamentos (Deadlock)**: Remoção de chamadas `printf` de dentro das interrupções (ISR) dos botões, movendo-as para o loop principal. Isso impede que o fluxo USB congele o microcontrolador.
+- **Feedback Visual Imediato**: A transição da tela de seleção (Menu) para o estado de escuta agora limpa o display e exibe a mensagem "Ouvindo...", resolvendo o problema de congelamento visual.
+
+---
+
 ## ✨ Características
 
 - **Detecção de Frequência em Tempo Real**: Algoritmo de autocorrelação para identificar a nota musical com precisão.
@@ -32,6 +43,8 @@ Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberr
 - **Botões de Controle**: Confirmação (btnA) e retorno ao menu (btnB).
 - **Padrão EADGBE**: Afinação convencional de 6 cordas.
 - **Processamento Eficiente**: Otimizado para arquitetura ARM Cortex-M0+ do RP2040.
+- **Interface Web via Wi-Fi**: Acompanhe o status em tempo real pelo navegador via servidor local.
+- **Comunicação UART**: Suporte a comandos externos para troca de afinação (Standard / Drop-D).
 
 ---
 
@@ -48,8 +61,8 @@ Um afinador de guitarra portátil e de baixo custo desenvolvido com o **Raspberr
 | Botões Momentâneos | 2 | Confirmação e retorno |
 | LEDs | 3 | Feedback de status |
 | Buzzer Passivo | 1 | Feedback sonoro de afinação |
-| Resistores | Diversos | ~10kΩ para BTNs, ~220Ω para LEDs |
-| Capacitores | Diversos | Decoupling e filtragem |
+
+
 
 ### Pinagem
 
@@ -60,7 +73,6 @@ I2C_SCL = GPIO 15
 
 // ADC (Entrada de Áudio)
 MIC_PIN = GPIO 28 (ADC Channel 2)
-JOYSTICK_X = GPIO 26 (ADC Channel 0)
 JOYSTICK_Y = GPIO 27 (ADC Channel 1)
 
 // Botões (GPIO com Pull-Up Interno)
@@ -74,6 +86,7 @@ LED_RED    = GPIO 13  (Corda alta)
 
 // Buzzer (PWM)
 BUZZER_PIN = GPIO 10  (Feedback sonoro)
+
 ```
 
 ### Diagrama de Conexão
@@ -143,7 +156,7 @@ GND         | GND             | Terra comum
 
 ---
 
-## 🎮 Como Usar
+## Como Usar
 
 ### Fluxo de Operação
 
@@ -236,7 +249,7 @@ O afinador utiliza **autocorrelação** para detectar a frequência fundamental 
 
 Para um sinal periódico (como uma nota musical), medir a correlação entre o sinal e uma versão atrasada dele identifica o **período**, que é inversamente proporcional à frequência.
 
-$$f = \frac{f_s}{\text{período}}$$
+<img src="img/frequencia.png">
 
 ### Passo a Passo
 
@@ -244,7 +257,7 @@ $$f = \frac{f_s}{\text{período}}$$
 
 O ADC captura valores de 0 a 4095, centrados em 2048. Remove-se o offset DC:
 
-$$\text{sinal}[i] = \text{adc\_valor}[i] - 2048$$
+<img src="img/sinal_ADC.png">
 
 Isso isola apenas a oscilação da onda (picos positivos e negativos).
 
@@ -257,8 +270,7 @@ O algoritmo testa atrasos de 20 a 512 amostras:
 #### 3. Cálculo da Correlação
 
 Para cada atraso, computa o **produto ponto** entre o sinal original e a versão atrasada:
-
-$$\text{correlação}(\text{atraso}) = \sum_{i=0}^{n/2-1} [\text{sinal}[i] \times \text{sinal}[i + \text{atraso}]]$$
+<img src="img/Correlacao.png">
 
 Se o período real = atraso, as duas versões se alinham perfeitamente, resultando em correlação máxima.
 
@@ -266,11 +278,11 @@ Se o período real = atraso, as duas versões se alinham perfeitamente, resultan
 
 Encontra o `atraso` com maior correlação:
 
-$$\text{melhor\_atraso} = \arg\max(\text{correlação})$$
+<img src="img/atraso.png">
 
 #### 5. Cálculo da Frequência
 
-$$f_{\text{detectada}} = \frac{f_s}{\text{melhor\_atraso}} = \frac{8000}{\text{melhor\_atraso}}$$
+<img src="img/freq_total.png">
 
 Se `melhor_atraso = 100`, então $f = 80$ Hz.
 
@@ -515,4 +527,3 @@ Contribuições são bem-vindas! Para sugerir melhorias:
 ---
 
 **Última atualização**: Abril de 2026
-

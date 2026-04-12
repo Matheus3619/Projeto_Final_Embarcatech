@@ -14,17 +14,7 @@
 
 // LEDs (G, B, R)
 static const unsigned int LEDS[] = {11, 12, 13};
-
 #define BUZZER_PIN 10
-#define NOTE_A4 440.0f
-#define NOTE_B4 493.88f
-#define NOTE_C5 523.25f
-#define NOTE_D5 587.33f
-#define NOTE_E5 659.25f
-#define NOTE_F5 698.46f
-#define NOTE_G5 783.99f
-#define NOTE_A5 880.0f
-
 
 // Joystick
 #define JOYSTICK_X 26
