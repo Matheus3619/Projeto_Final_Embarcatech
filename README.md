@@ -168,12 +168,19 @@ GND         | GND             | Terra comum
 
 2. **Selecione a Corda**:
    - Move o **Joystick para cima/baixo** para navegar entre as 6 cordas.
-   - A seta ">>" indica a corda selecionada.
+   - A seta "->" indica a corda selecionada.
    - Posição do joystick = posição na tela (mapeamento contínuo).
+
+   <img src="img/menu.jpeg" width="200">
+
 
 3. **Confirme a Corda**:
    - Pressione **Botão A** para confirmar a corda desejada.
    - O display entra em modo de afinação.
+
+
+   <img src="img/espera.jpeg" width="200">
+
 
 4. **Toque a Corda**:
    - Puxe/plucke a corda selecionada.
@@ -187,8 +194,16 @@ GND         | GND             | Terra comum
      - Status: "OK!", "APERTAR CORDA ^", "AFROUXAR CORDA v", "SEM SINAL"
    - **LEDs indicam status**:
      - 🟢 Verde = Afinado (erro < ±1.2 Hz)
+
+     <img src="img/afinado.jpeg" width="200">
+
      - 🔵 Azul = Muito baixo (apertar)
+
+     <img src="img/baixo.jpeg" width="200">
+
      - 🔴 Vermelho = Muito alto (afrouxar)
+     
+     <img src="img/alto.jpeg" width="200">
 
 6. **Volte ao Menu**:
    - Pressione **Botão B** para retornar ao menu e selecionar outra corda.

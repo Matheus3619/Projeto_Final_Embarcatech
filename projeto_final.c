@@ -46,7 +46,6 @@ void setup(){
     adc_init();
     adc_gpio_init(MIC_PIN);
     adc_select_input(ADC_CHAN);
-    adc_gpio_init(JOYSTICK_X);
     adc_gpio_init(JOYSTICK_Y);
 
     gpio_init(BTN_A);

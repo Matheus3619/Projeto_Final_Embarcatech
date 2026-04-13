@@ -9,7 +9,6 @@
 #define I2C_SCL 15
 #define MIC_PIN 28
 #define ADC_CHAN 2
-#define ADC_CHANNEL_X 0
 #define ADC_CHANNEL_Y 1
 
 // LEDs (G, B, R)
@@ -17,7 +16,6 @@ static const unsigned int LEDS[] = {11, 12, 13};
 #define BUZZER_PIN 10
 
 // Joystick
-#define JOYSTICK_X 26
 #define JOYSTICK_Y 27
 
 // BOTÕES
